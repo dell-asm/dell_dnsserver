@@ -11,9 +11,14 @@ require_relative '../../../../../scvmm/lib/puppet/provider/winrm'
 Puppet::Type.type(:dnsserver_resourcerecord).provide(:default, :parent => Puppet::Provider::Winrm) do
 
   def exists?
+    begin
     result = winrm_ps(exist_cmd)
     Puppet.debug("Get Response: #{result}")
-    result.include? resource[:name]
+      result.include?('completed successfully')
+    rescue Exception => e
+      Puppet.debug("Command Execution failed. Host entry missing")
+      return false      
+    end
   end
 
   def create
@@ -21,19 +26,23 @@ Puppet::Type.type(:dnsserver_resourcerecord).provide(:default, :parent => Puppet
   end
 
   def destroy
-    command =  "Remove-DnsServerResourceRecord -ZoneName #{quote(resource[:zonename])} -Name #{quote(resource[:name])} "
-    command.concat " -RRType #{quote(resource[:rrtype])} "
-    command.concat " -Force" if resource[:force] == :true
+    command = "dnscmd /recorddelete #{quote(resource[:zonename])}"
+    command.concat " #{quote(resource[:name])}"
+    command.concat " #{quote(resource[:rrtype])}"
+    command.concat " /f"
     winrm_ps(command)
   end
 
   def exist_cmd
-    command = "Get-DnsServerResourceRecord -zonename #{quote(resource[:zonename])}  | select hostname"
+    command = "dnscmd /enumrecords #{quote(resource[:zonename])} #{quote(resource[:name])} "
     Puppet.debug("Exists command: #{command}")
     command
   end
 
   def create_cmd
-    command = "Add-DnsServerResourceRecord -ZoneName #{quote(resource[:zonename])} -Name #{quote(resource[:name])} -A -IPv4Address #{quote(resource[:ipaddress])}"
+    command = "dnscmd /recordadd #{quote(resource[:zonename])}"
+    command.concat " #{quote(resource[:name])}"
+    command.concat " #{quote(resource[:rrtype])}" 
+    command.concat " #{quote(resource[:ipaddress])}"
   end
 end

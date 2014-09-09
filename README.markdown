@@ -32,6 +32,11 @@ WinRM processes are limited to 150 MB or memory by default. We need to increase 
 winrm set winrm/config/winrs '@{MaxMemoryPerShellMB=1024}'
 ```
 
+For Windows 2008
+```powershell
+winrm quickconfig
+```
+
 There is a known issue with WMF 3.0. If the MaxMemoryPerShellMB configuration appears to be ignored, please see [KB2842230](http://support.microsoft.com/kb/2842230). The hotfix for Windows 8/Windows 2012 x64 is available at the following [link](http://hotfixv4.microsoft.com/Windows%208%20RTM/nosp/Fix452763/9200/free/463941_intl_x64_zip.exe).
 
 ### Transport
