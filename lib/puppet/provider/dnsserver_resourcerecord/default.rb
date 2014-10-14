@@ -11,14 +11,13 @@ require_relative '../../../../../scvmm/lib/puppet/provider/winrm'
 Puppet::Type.type(:dnsserver_resourcerecord).provide(:default, :parent => Puppet::Provider::Winrm) do
 
   def exists?
-    begin
     result = winrm_ps(exist_cmd)
     Puppet.debug("Get Response: #{result}")
-      result.include?('completed successfully')
-    rescue Exception => e
-      Puppet.debug("Command Execution failed. Host entry missing")
-      return false      
-    end
+
+    result =~ /Returned records:.+@.+completed successfully/m
+  rescue Exception => e
+    Puppet.debug("Command Execution failed: %s (%s)" % [e.to_s, e.class])
+    return false
   end
 
   def create
@@ -42,7 +41,7 @@ Puppet::Type.type(:dnsserver_resourcerecord).provide(:default, :parent => Puppet
   def create_cmd
     command = "dnscmd /recordadd #{quote(resource[:zonename])}"
     command.concat " #{quote(resource[:name])}"
-    command.concat " #{quote(resource[:rrtype])}" 
+    command.concat " #{quote(resource[:rrtype])}"
     command.concat " #{quote(resource[:ipaddress])}"
   end
 end
