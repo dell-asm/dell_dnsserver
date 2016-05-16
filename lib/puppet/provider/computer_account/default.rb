@@ -24,7 +24,7 @@ Puppet::Type.type(:computer_account).provide(:default, :parent => Puppet::Provid
   end
 
   def destroy
-    command = "dsrm.exe -q -noprompt #{@result}"
+    command = "dsrm.exe -q -noprompt -subtree #{@result}"
     winrm_ps(command)
   end
 
